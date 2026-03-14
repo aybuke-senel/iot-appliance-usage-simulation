@@ -17,6 +17,8 @@ This project demonstrates how smart home devices can stream energy usage data to
 
 The goal of this project is to simulate an IoT architecture for tracking household appliance energy consumption.
 
+Before the simulation stage, the dataset was explored and cleaned manually. SQL queries were used to filter records, remove null values, and select the most relevant appliance datasets for the simulation.
+
 The system:
 - reads appliance sensor logs from CSV files
 - simulates IoT devices
@@ -42,9 +44,12 @@ The system:
 
 - Python
 - Pandas
+- SQL (dataset filtering & preprocessing)
 - MQTT (paho-mqtt)
 - CSV time-series data processing
 - Simulation-based architecture
+- Power BI (data visualization)
+
 
 -----
 
@@ -76,6 +81,12 @@ Any similar CSV time-series dataset can be used to run the code.
 
 ## How to Run
 
+Install required libraries:
 ```bash
 pip install pandas paho-mqtt
+```
+
+Run the simulation:
+```bash
 python simulation_main.py
+```
