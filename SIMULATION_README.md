@@ -10,7 +10,7 @@ Bu simülasyon, **IoT-Based Appliance Usage Tracker** sisteminin tam bir simüla
 
 ## Simülasyon Dosyası
 
-- **`simulation_main.py`**
+- [**`simulation_main.py`**](./simulation_main.py)
 
 ## Kullanım
 
@@ -26,7 +26,7 @@ python3 simulation_main.py
 
 ## Simülasyon Parametreleri
 
-`simulation_main.py` dosyasında aşağıdaki parametreleri ayarlanmalıdır:
+[`simulation_main.py`](./simulation_main.py) dosyasında aşağıdaki parametreleri ayarlanmalıdır:
 
 ```python
 SAMPLE_SIZE = None      # None = Tüm kayıtlar, veya sayı belirtin (örn: 1000)
@@ -129,7 +129,7 @@ class LiveStats:
 
 ### Sunumumuz İçin Kullanım
 
-Simülasyonu kaydetmek için terminal ekranını kaydettim:
+Simülasyonu kaydetmek için terminal ekranımı kaydettim:
 ```bash
 # macOS kullandığım için
 script -a simulation_output.txt python3 simulation_main.py
@@ -190,5 +190,5 @@ Bu simülasyon kodu, projemizin **"Proposed Methodology"** bölümünde şu şek
 
 > "Simülasyonumuz üç katmanlı mimariyi taklit eder: (1) Cihaz katmanında CSV dosyalarından sensör verileri okunur, (2) İletişim katmanında MQTT protokolü ile mesaj yayınlama simüle edilir, (3) Uygulama katmanında bulut tabanlı mesaj işleme ve canlı dashboard gösterimi gerçekleştirilir."
 
-Simülasyon kodları `simulation_main.py` dosyasında bulunmaktadır ve projenin teknik detaylarını kanıtlamak için kullanılabilir.
+Simülasyon kodları [`simulation_main.py`](./simulation_main.py) dosyasında bulunmaktadır ve projenin teknik detaylarını kanıtlamak için kullanılabilir.
 
