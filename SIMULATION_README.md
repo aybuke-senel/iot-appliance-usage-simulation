@@ -1,6 +1,6 @@
 # IoT-Based Appliance Usage Tracker - Simulation Documentation
 
-## 📋 Genel Bakış
+## Genel Bakış
 
 Bu simülasyon, **IoT-Based Appliance Usage Tracker** sisteminin tam bir simülasyonunu gerçekleştirir. Sistem üç katmanlı bir mimariyi taklit eder:
 
@@ -8,17 +8,11 @@ Bu simülasyon, **IoT-Based Appliance Usage Tracker** sisteminin tam bir simüla
 2. **İletişim Katmanı (Communication Layer)**: MQTT mesaj yayınlama simülasyonu
 3. **Uygulama Katmanı (Application Layer)**: Bulut tabanlı mesaj işleme ve canlı dashboard gösterimi
 
-## 📁 Simülasyon Dosyaları
+## Simülasyon Dosyası
 
-### Ana Simülasyon Dosyası
-- **`simulation_main.py`**: Proje için hazırlanmış temiz ve dokümante edilmiş simülasyon kodu
+- **`simulation_main.py`**
 
-### Alternatif Simülasyon Dosyaları
-- **`iot_simulation_terminal_live.py`**: Terminal'de canlı görselleştirme ile simülasyon (gelişmiş)
-- **`iot_simulation_live.py`**: GUI grafikleri ile simülasyon
-- **`iot_simulation.py`**: Basit simülasyon (log dosyasına kayıt)
-
-## 🚀 Kullanım
+## Kullanım
 
 ### Gereksinimler
 ```bash
@@ -30,16 +24,16 @@ pip install pandas numpy
 python3 simulation_main.py
 ```
 
-## 🔧 Simülasyon Parametreleri
+## Simülasyon Parametreleri
 
-`simulation_main.py` dosyasında aşağıdaki parametreleri ayarlayabilirsiniz:
+`simulation_main.py` dosyasında aşağıdaki parametreleri ayarlanmalıdır:
 
 ```python
 SAMPLE_SIZE = None      # None = Tüm kayıtlar, veya sayı belirtin (örn: 1000)
 PUBLISH_RATE = 10000.0  # Saniyede mesaj sayısı (10000 = hızlı simülasyon)
 ```
 
-## 📊 Simülasyon Bileşenleri
+## Simülasyon Bileşenleri
 
 ### 1. MQTT Publish Simülasyonu
 ```python
@@ -101,7 +95,7 @@ class LiveStats:
 - Anlık güç değeri
 - Son güç değerleri (son 20 kayıt)
 
-## 📈 Simülasyon Akışı
+## Simülasyon Akışı
 
 ```
 1. CSV Dosyası Okuma
@@ -118,9 +112,9 @@ class LiveStats:
 4. Özet Rapor
 ```
 
-## 🎯 Proje İçin Kullanım
+## Projemizdeki Kullanımı
 
-### Paper'da Bahsedilecek Kodlar
+### Paper'da Bahsettiğimiz Kodlar
 
 1. **Ana Simülasyon Dosyası**: `simulation_main.py`
    - Tüm simülasyon mantığını içerir
@@ -133,18 +127,16 @@ class LiveStats:
    - `LiveStats`: İstatistik takibi
    - `print_dashboard()`: Dashboard gösterimi
 
-### Video İçin Kullanım
+### Sunumumuz İçin Kullanım
 
-Simülasyonu kaydetmek için terminal ekranını kaydedin:
+Simülasyonu kaydetmek için terminal ekranını kaydettim:
 ```bash
-# macOS için
+# macOS kullandığım için
 script -a simulation_output.txt python3 simulation_main.py
 
-# veya ekran kaydı için
-# QuickTime Player veya başka bir ekran kayıt aracı kullanın
 ```
 
-## 📝 Simülasyon Çıktıları
+## Simülasyon Çıktıları
 
 ### Terminal Çıktısı
 - Canlı dashboard güncellemeleri
@@ -152,10 +144,10 @@ script -a simulation_output.txt python3 simulation_main.py
 - Gerçek zamanlı istatistikler
 - MQTT mesaj logları (isteğe bağlı)
 
-### Log Dosyası (isteğe bağlı)
+### Log Dosyası 
 - `iot_simulation.log`: Detaylı simülasyon logları
 
-## 🔍 Teknik Detaylar
+## Teknik Detaylar
 
 ### Veri Formatı
 - **Giriş**: CSV dosyaları (`fridge_207.csv`, `vacuum_254.csv`)
@@ -176,7 +168,7 @@ script -a simulation_output.txt python3 simulation_main.py
 - Mesaj logları her mesaj için değil, örnekleme ile gösterilir
 - İlerleme çubuğu her 100 kayıtta bir güncellenir
 
-## 📚 Referanslar
+## Referanslar
 
 Bu simülasyon aşağıdaki gerçek sistem bileşenlerini taklit eder:
 
@@ -185,16 +177,16 @@ Bu simülasyon aşağıdaki gerçek sistem bileşenlerini taklit eder:
 3. **Bulut Sunucu**: `CloudProcessor` sınıfı
 4. **Web Dashboard**: `print_dashboard()` fonksiyonu
 
-## ⚠️ Notlar
+## Notlar
 
 - Bu simülasyon gerçek bir MQTT broker kullanmaz
 - Tüm iletişim Python içinde simüle edilir
 - Simülasyon amacıyla tasarlanmıştır, gerçek IoT sistemine dönüştürülebilir
 - Büyük veri setleri için simülasyon süresi uzun olabilir (2.5M kayıt için ~4-5 dakika)
 
-## 🎓 Akademik Kullanım
+## Akademik Kullanım
 
-Bu simülasyon kodu, projenizin **"Proposed Methodology"** bölümünde şu şekilde açıklanabilir:
+Bu simülasyon kodu, projemizin **"Proposed Methodology"** bölümünde şu şekilde açıklanmaktadır:
 
 > "Simülasyonumuz üç katmanlı mimariyi taklit eder: (1) Cihaz katmanında CSV dosyalarından sensör verileri okunur, (2) İletişim katmanında MQTT protokolü ile mesaj yayınlama simüle edilir, (3) Uygulama katmanında bulut tabanlı mesaj işleme ve canlı dashboard gösterimi gerçekleştirilir."
 
