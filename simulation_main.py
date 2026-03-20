@@ -1,14 +1,7 @@
 """
 IoT-Based Appliance Usage Tracker - Simulation Main File
-========================================================
-
-This file simulates the complete IoT system:
-1. Device Layer: Reads data from CSV files (simulating smart plugs)
-2. Communication Layer: MQTT message publishing simulation
-3. Application Layer: Cloud processor and dashboard simulation
 
 Author: Aybüke ŞENEL
-Date: 2025-12-08 
 """
 
 import pandas as pd
@@ -19,9 +12,8 @@ import os
 import sys
 from collections import deque
 
-# ============================================================================
-# TERMINAL COLORS AND UTILITIES
-# ============================================================================
+# Terminal utilities
+
 class Colors:
     """Terminal color codes for better visualization"""
     GREEN = '\033[92m'
@@ -36,8 +28,8 @@ class Colors:
 def clear_screen():
     """Clear terminal screen"""
     os.system('clear' if os.name == 'posix' else 'cls')
-
-# MQTT için paho-mqtt kütüphanesi (opsiyonel)
+    
+# Optional MQTT support
 try:
     import paho.mqtt.client as mqtt
     MQTT_AVAILABLE = True
@@ -45,10 +37,9 @@ except ImportError:
     MQTT_AVAILABLE = False
     print(f"{Colors.YELLOW}[WARNING]{Colors.RESET} paho-mqtt not installed. Using simulation mode only.")
     print(f"{Colors.YELLOW}Install with: pip install paho-mqtt{Colors.RESET}\n")
+    
+# Statistics
 
-# ============================================================================
-# LIVE STATISTICS TRACKER
-# ============================================================================
 class LiveStats:
     """Tracks live statistics during simulation"""
     
@@ -85,32 +76,17 @@ class LiveStats:
         bar = "█" * filled + "░" * (width - filled)
         return bar
 
-# ============================================================================
-# MQTT CLIENT (GERÇEK MQTT DESTEĞİ)
-# ============================================================================
+# MQTT client
+
 class MQTTClient:
-    """Gerçek MQTT broker'a bağlanmak için client"""
     
     def __init__(self, broker_host="localhost", broker_port=1883, 
                  username=None, password=None, client_id=None):
-        """
-        MQTT Client oluştur
-        
-        Parameters:
-        -----------
-        broker_host : str
-            MQTT broker adresi (örn: "localhost", "broker.hivemq.com", "test.mosquitto.org")
-        broker_port : int
-            MQTT broker portu (genellikle 1883)
-        username : str, optional
-            MQTT broker kullanıcı adı (gerekirse)
-        password : str, optional
-            MQTT broker şifresi (gerekirse)
-        client_id : str, optional
-            MQTT client ID (None ise otomatik oluşturulur)
-        """
+                     
+       """Initialize MQTT client."""
+                     
         if not MQTT_AVAILABLE:
-            raise ImportError("paho-mqtt kütüphanesi yüklü değil. 'pip install paho-mqtt' ile yükleyin.")
+            raise ImportError("paho-mqtt is not installed.")
         
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -121,25 +97,24 @@ class MQTTClient:
         self.connected = False
         
     def connect(self):
-        """MQTT broker'a bağlan"""
+        """Connect to MQTT broker."""
         try:
             self.client = mqtt.Client(client_id=self.client_id)
             
-            # Authentication varsa ayarla
+            # Set authentication
             if self.username and self.password:
                 self.client.username_pw_set(self.username, self.password)
             
-            # Callback fonksiyonları
+            # Set callbacks
             self.client.on_connect = self._on_connect
             self.client.on_disconnect = self._on_disconnect
             self.client.on_publish = self._on_publish
             
-            # Bağlan
             print(f"{Colors.BLUE}[MQTT]{Colors.RESET} Connecting to broker: {Colors.CYAN}{self.broker_host}:{self.broker_port}{Colors.RESET}")
             self.client.connect(self.broker_host, self.broker_port, keepalive=60)
             self.client.loop_start()
             
-            # Bağlantı bekle (max 5 saniye)
+            # Wait for connection
             timeout = 5
             start_time = time.time()
             while not self.connected and (time.time() - start_time) < timeout:
@@ -158,7 +133,7 @@ class MQTTClient:
             return False
     
     def _on_connect(self, client, userdata, flags, rc):
-        """Bağlantı callback"""
+        """On connect callback."""
         if rc == 0:
             self.connected = True
         else:
@@ -166,35 +141,19 @@ class MQTTClient:
             self.connected = False
     
     def _on_disconnect(self, client, userdata, rc):
-        """Bağlantı kesilme callback"""
+        """On disconnect callback."""
         self.connected = False
         if rc != 0:
             print(f"{Colors.YELLOW}[MQTT]{Colors.RESET} Unexpected disconnection{Colors.RESET}")
     
     def _on_publish(self, client, userdata, mid):
-        """Publish callback (mesaj gönderildiğinde çağrılır)"""
-        pass  # İsteğe bağlı: publish başarılı olduğunda log
+        """On publish callback."""
+        pass  
     
     def publish(self, topic, payload, qos=0, retain=False):
-        """
-        MQTT topic'e mesaj yayınla
         
-        Parameters:
-        -----------
-        topic : str
-            MQTT topic
-        payload : dict
-            JSON payload (dict olarak)
-        qos : int
-            Quality of Service (0, 1, veya 2)
-        retain : bool
-            Retain flag
+       """Publish message to MQTT."""
         
-        Returns:
-        --------
-        bool
-            Başarılı ise True
-        """
         if not self.connected:
             print(f"{Colors.RED}[MQTT ERROR]{Colors.RESET} Not connected to broker!{Colors.RESET}")
             return False
@@ -214,33 +173,28 @@ class MQTTClient:
             return False
     
     def disconnect(self):
-        """MQTT broker'dan bağlantıyı kes"""
+        """Disconnect from broker."""
         if self.client:
             self.client.loop_stop()
             self.client.disconnect()
             self.connected = False
             print(f"{Colors.BLUE}[MQTT]{Colors.RESET} Disconnected{Colors.RESET}")
+            
+# MQTT publish
 
-# ============================================================================
-# MQTT PUBLISH FUNCTIONS (SIMÜLASYON VE GERÇEK)
-# ============================================================================
 def fake_mqtt_publish(topic, payload, stats, verbose=True, show_json=True):
-    """
-    Simulates MQTT publish operation
     
-    In a real system, this would send data to an MQTT broker.
-    Here, we simulate the publish operation by processing the payload.
-    """
+   """Simulate MQTT publish."""
+    
     power = payload.get("power", 0.0)
     timestamp = payload.get("timestamp", "")
     
     # Update statistics
     stats.add_data(power)
     
-    # JSON mesajını formatla
+    # Format JSON
     json_message = json.dumps(payload, indent=2)
     
-    # Display message (every 100 messages for performance or always if verbose)
     if verbose or show_json:
         print(f"\n{Colors.MAGENTA}{'='*80}")
         print(f"{Colors.MAGENTA}[MQTT PUBLISH - SIMULATION]{Colors.RESET}")
@@ -263,34 +217,18 @@ def fake_mqtt_publish(topic, payload, stats, verbose=True, show_json=True):
         print(f"{Colors.MAGENTA}{'='*80}{Colors.RESET}\n")
 
 def real_mqtt_publish(mqtt_client, topic, payload, stats, verbose=True, show_json=True):
-    """
-    Gerçek MQTT broker'a mesaj yayınla
     
-    Parameters:
-    -----------
-    mqtt_client : MQTTClient
-        Bağlı MQTT client
-    topic : str
-        MQTT topic
-    payload : dict
-        JSON payload
-    stats : LiveStats
-        İstatistikler
-    verbose : bool
-        Detaylı çıktı göster
-    show_json : bool
-        JSON mesajını göster
-    """
+    """Publish message to MQTT."""
+    
     power = payload.get("power", 0.0)
     timestamp = payload.get("timestamp", "")
     
     # Update statistics
     stats.add_data(power)
     
-    # JSON mesajını formatla
+    # Format JSON
     json_message = json.dumps(payload, indent=2)
     
-    # Gerçek MQTT'ye gönder
     success = mqtt_client.publish(topic, payload, qos=0)
     
     # Display message
@@ -319,30 +257,15 @@ def real_mqtt_publish(mqtt_client, topic, payload, stats, verbose=True, show_jso
         print(f"  [{Colors.GREEN}{power_bar}{Colors.RESET}]")
         print(f"{Colors.MAGENTA}{'='*80}{Colors.RESET}\n")
 
-# ============================================================================
-# APPLICATION LAYER - MQTT SUBSCRIBER (Communication Layer'dan veri alır)
-# ============================================================================
+# Application layer
+
 class ApplicationLayer:
-    """
-    Application Layer - MQTT'den subscribe edip JSON ile işler
-    
-    Bu katman:
-    1. Communication Layer'dan (MQTT broker) mesajları subscribe eder
-    2. JSON formatındaki mesajları parse eder
-    3. Verileri işler ve analiz eder
-    """
+   """Handle incoming MQTT messages."""
     
     def __init__(self, mqtt_client=None, topic_filter="home/appliance/+/power"):
-        """
-        Application Layer oluştur
         
-        Parameters:
-        -----------
-        mqtt_client : MQTTClient, optional
-            MQTT client (gerçek MQTT için)
-        topic_filter : str
-            Subscribe edilecek topic pattern (örn: "home/appliance/+/power")
-        """
+       """Initialize application layer."""
+        
         self.received_messages = []
         self.processed_count = 0
         self.device_stats = {}
@@ -351,16 +274,15 @@ class ApplicationLayer:
         self.subscribed = False
         
     def subscribe_to_mqtt(self):
-        """MQTT broker'dan mesajları subscribe et"""
+        """Subscribe to MQTT topic."""
         if not self.mqtt_client or not self.mqtt_client.connected:
             print(f"{Colors.YELLOW}[APPLICATION LAYER]{Colors.RESET} No MQTT client. Using simulation mode.{Colors.RESET}")
             return False
         
         try:
-            # MQTT callback fonksiyonlarını ayarla
+            # Set callback
             self.mqtt_client.client.on_message = self._on_mqtt_message
             
-            # Topic'e subscribe ol
             self.mqtt_client.client.subscribe(self.topic_filter, qos=0)
             self.subscribed = True
             
@@ -371,18 +293,13 @@ class ApplicationLayer:
             return False
     
     def _on_mqtt_message(self, client, userdata, msg):
-        """
-        MQTT mesajı geldiğinde çağrılır (callback)
+        """Handle incoming MQTT message."""
         
-        Bu fonksiyon Communication Layer'dan (MQTT broker) gelen mesajları alır
-        """
         try:
-            # MQTT'den gelen mesajı JSON olarak parse et
             topic = msg.topic
             json_payload = msg.payload.decode('utf-8')
             payload = json.loads(json_payload)
             
-            # Application Layer'da işle
             self.process_json_message(topic, payload)
             
         except json.JSONDecodeError as e:
@@ -391,30 +308,15 @@ class ApplicationLayer:
             print(f"{Colors.RED}[APPLICATION LAYER ERROR]{Colors.RESET} Message processing error: {str(e)}{Colors.RESET}")
     
     def process_json_message(self, topic, payload, verbose=True):
-        """
-        Communication Layer'dan gelen JSON mesajını işle
         
-        Bu fonksiyon:
-        1. JSON formatındaki mesajı alır (Communication Layer'dan)
-        2. Verileri parse eder
-        3. İstatistikleri hesaplar
-        4. Application Layer'da işler
+        """Process MQTT message."""
         
-        Parameters:
-        -----------
-        topic : str
-            MQTT topic
-        payload : dict
-            JSON payload (Communication Layer'dan gelen)
-        verbose : bool
-            Detaylı çıktı göster
-        """
         try:
             device_id = payload.get("device_id", "unknown")
             timestamp = payload.get("timestamp", "")
             power = payload.get("power", 0.0)
             
-            # İstatistikleri güncelle
+            # Update statistics
             if device_id not in self.device_stats:
                 self.device_stats[device_id] = {
                     "message_count": 0,
@@ -460,27 +362,16 @@ class ApplicationLayer:
         except Exception as e:
             print(f"{Colors.RED}[APPLICATION LAYER ERROR]{Colors.RESET} Processing failed: {str(e)}{Colors.RESET}")
 
-# ============================================================================
-# CLOUD PROCESSOR SIMULATION (Backward compatibility)
-# ============================================================================
+# Cloud processor
+
 class CloudProcessor(ApplicationLayer):
-    """
-    Backward compatibility için - ApplicationLayer'ın eski adı
-    """
+    """Alias for ApplicationLayer."""
     pass
 
-# ============================================================================
-# LIVE DASHBOARD SIMULATION
-# ============================================================================
+# Dashboard
+
 def print_dashboard(stats, processor):
-    """
-    Displays live dashboard with real-time statistics
-    
-    This simulates a web-based dashboard that shows:
-    - Device information
-    - Real-time power consumption
-    - Statistics and trends
-    """
+    """Display live dashboard."""
     clear_screen()
     
     print(f"{Colors.BOLD}{Colors.CYAN}{'='*80}")
@@ -517,34 +408,11 @@ def print_dashboard(stats, processor):
     print(f"\n{Colors.YELLOW}{'─'*80}{Colors.RESET}")
     print(f"{Colors.MAGENTA}Processing MQTT messages...{Colors.RESET}")
 
-# ============================================================================
-# DEVICE SIMULATION
-# ============================================================================
+# Device simulation
+
 def simulate_device(device_name, csv_file, device_id, topic_prefix, 
                     sample_size=None, publish_rate=10000.0, mqtt_client=None):
-    """
-    Simulates a single IoT device
-    
-    Parameters:
-    -----------
-    device_name : str
-        Human-readable device name
-    csv_file : str
-        Path to CSV file containing device data
-    device_id : str
-        Unique device identifier
-    topic_prefix : str
-        MQTT topic prefix (e.g., "home/appliance")
-    sample_size : int or None
-        Number of records to simulate (None = all records)
-    publish_rate : float
-        Messages per second (higher = faster simulation)
-    
-    Returns:
-    --------
-    CloudProcessor
-        Processor instance with processed messages
-    """
+    """Simulate IoT device."""
     
     try:
         # Load dataset
@@ -554,10 +422,8 @@ def simulate_device(device_name, csv_file, device_id, topic_prefix,
         
         # Initialize statistics and Application Layer
         stats = LiveStats(device_id, device_name)
-        # Application Layer oluştur (Communication Layer'dan MQTT ile veri alacak)
         processor = ApplicationLayer(mqtt_client=mqtt_client, topic_filter=f"{topic_prefix}/+/power")
         
-        # Eğer gerçek MQTT kullanıyorsak, Application Layer'ı subscribe et
         if mqtt_client and mqtt_client.connected:
             processor.subscribe_to_mqtt()
         
@@ -588,7 +454,6 @@ def simulate_device(device_name, csv_file, device_id, topic_prefix,
         # Dashboard update frequency
         dashboard_update_interval = 100 if total_records > 1000 else 1
         
-        # TÜM VERİLER İÇİN BAŞLANGIÇ ZAMANI
         start_time = time.time()
         
         # Simulation loop
@@ -607,50 +472,31 @@ def simulate_device(device_name, csv_file, device_id, topic_prefix,
             if (i + 1) % dashboard_update_interval == 0 or (i + 1) == total_records:
                 print_dashboard(stats, processor)
             
-            # TÜM VERİLER İÇİN OPTİMİZE EDİLMİŞ ÇIKTI AYARLARI
-            # Büyük dosyalar için her mesajda değil, belirli aralıklarla göster
-            verbose = False  # Tüm veriler için False (her mesajda çıktı olmasın)
+            verbose = False  
             
-            # JSON gösterimi: İlk mesaj, sonra her 1000 mesajda bir, ve son mesaj
             show_json = (
-                stats.message_count == 1 or  # İlk mesaj
-                stats.message_count % 1000 == 0 or  # Her 1000 mesajda bir
-                (i + 1) == total_records  # Son mesaj
+                stats.message_count == 1 or  
+                stats.message_count % 1000 == 0 or  
+                (i + 1) == total_records 
             )
             
-            # Önemli mesajlar için özet göster (her 100 mesajda bir)
             show_summary = stats.message_count % 100 == 0
             
-            # ================================================================
-            # DEVICE LAYER → COMMUNICATION LAYER (MQTT Publish)
-            # ================================================================
-            # Device Layer'dan Communication Layer'a MQTT ile gönder
             if mqtt_client and mqtt_client.connected:
-                # Gerçek MQTT broker'a gönder (Communication Layer)
                 real_mqtt_publish(mqtt_client, topic, payload, stats, verbose=show_summary, show_json=show_json)
             else:
-                # Simülasyon modu (Communication Layer simülasyonu)
                 fake_mqtt_publish(topic, payload, stats, verbose=show_summary, show_json=show_json)
             
-            # ================================================================
-            # COMMUNICATION LAYER → APPLICATION LAYER (MQTT Subscribe + JSON)
-            # ================================================================
-            # Eğer gerçek MQTT kullanıyorsak, Application Layer zaten subscribe ile alacak
-            # Simülasyon modunda ise direkt işle
             if not (mqtt_client and mqtt_client.connected):
-                # Simülasyon modu: Communication Layer'dan Application Layer'a direkt geçiş
-                # Tüm veriler için: her 1000 mesajda bir veya önemli mesajlarda göster
                 app_verbose = show_summary or stats.message_count % 1000 == 0
                 processor.process_json_message(topic, payload, verbose=app_verbose)
             
-            # TÜM VERİLER İÇİN İLERLEME GÖSTERİMİ (her 100 kayıtta bir)
             if (i + 1) % 100 == 0 or (i + 1) == total_records:
                 progress = ((i + 1) / total_records) * 100
                 progress_bar_length = 50
                 filled = int(progress_bar_length * progress / 100)
                 bar = "█" * filled + "░" * (progress_bar_length - filled)
                 
-                # İstatistiklerle birlikte göster
                 avg_power = stats.get_avg_power()
                 elapsed_time = time.time() - start_time
                 if (i + 1) % 100 == 0:
@@ -663,10 +509,8 @@ def simulate_device(device_name, csv_file, device_id, topic_prefix,
             # Realistic publish rate delay
             time.sleep(1.0 / publish_rate)
         
-        # Final dashboard ve özet
         print_dashboard(stats, processor)
         
-        # TÜM VERİLER İÇİN DETAYLI FİNAL ÖZET
         total_time = time.time() - start_time
         print(f"\n{Colors.GREEN}{Colors.BOLD}{'='*80}")
         print(f"✓ SIMULATION COMPLETE FOR {device_name.upper()}!")
@@ -692,28 +536,11 @@ def simulate_device(device_name, csv_file, device_id, topic_prefix,
     except Exception as e:
         print(f"{Colors.RED}[ERROR]{Colors.RESET} Simulation failed: {str(e)}")
         return None
+        
+# Main
 
-# ============================================================================
-# MAIN SIMULATION FUNCTION
-# ============================================================================
 def main():
-    """
-    Main simulation function
-    
-    IoT Sistem Mimarisi:
-    ====================
-    1. DEVICE LAYER: Dataset'ten veri okur (Smart Plug simülasyonu)
-       ↓ (MQTT Publish)
-    2. COMMUNICATION LAYER: MQTT Broker (mesajları iletir)
-       ↓ (MQTT Subscribe + JSON)
-    3. APPLICATION LAYER: JSON mesajlarını alır ve işler
-    
-    Simulates the complete IoT system with multiple devices:
-    - Reads data from CSV files (device layer)
-    - Publishes MQTT messages (communication layer)
-    - Subscribes to MQTT and processes JSON messages (application layer)
-    - Displays live dashboard
-    """
+   """Run simulation."""
     
     # Clear screen and show header
     clear_screen()
@@ -722,22 +549,14 @@ def main():
     print("="*80 + Colors.RESET)
     print(f"\n{Colors.GREEN}Starting IoT Simulation System...{Colors.RESET}")
     print(f"{Colors.BLUE}Simulating: ESP32 Smart Plugs + MQTT + Cloud Processor{Colors.RESET}\n")
+   
+    USE_REAL_MQTT = False  
     
-    # ========================================================================
-    # MQTT MODU SEÇİMİ
-    # ========================================================================
-    # ⚠️ ÖNEMLİ: Şu anda SIMÜLASYON MODU aktif (gerçek MQTT kullanmıyor)
-    # Gerçek MQTT kullanmak için aşağıdaki ayarları yapın:
-    USE_REAL_MQTT = False  # True = Gerçek MQTT, False = Simülasyon (ŞU AN: False = Simülasyon)
-    
-    # MQTT Broker Ayarları (USE_REAL_MQTT=True ise)
-    # Seçenek 1: Public Broker (kolay - internet gerekir)
-    MQTT_BROKER_HOST = "broker.hivemq.com"  # veya "test.mosquitto.org"
-    # Seçenek 2: Yerel Broker (daha iyi - Mosquitto kurulumu gerekir)
-    # MQTT_BROKER_HOST = "localhost"  # Yerel Mosquitto için
+    MQTT_BROKER_HOST = "broker.hivemq.com"  
+  
     MQTT_BROKER_PORT = 1883
-    MQTT_USERNAME = None  # Gerekirse kullanıcı adı
-    MQTT_PASSWORD = None  # Gerekirse şifre
+    MQTT_USERNAME = None  
+    MQTT_PASSWORD = None  
     
     mqtt_client = None
     
@@ -772,10 +591,8 @@ def main():
         print(f"{Colors.GREEN}✓ Real MQTT Architecture:{Colors.RESET}")
         print(f"{Colors.GREEN}  Device Layer → MQTT Publish → Communication Layer (MQTT Broker) → MQTT Subscribe → Application Layer (JSON){Colors.RESET}\n")
     
-    # Simulation parameters
-    # TÜM VERİLER İÇİN AYARLAR (fridge_207.csv ve vacuum_254.csv'nin tamamı)
-    SAMPLE_SIZE = None  # None = TÜM kayıtlar (fridge_207 ve vacuum_254 dosyalarının tamamı)
-    PUBLISH_RATE = 10000.0  # Messages per second (10000 = hızlı simülasyon, tüm veriler için)
+    SAMPLE_SIZE = None  
+    PUBLISH_RATE = 10000.0  
     
     # Device configurations
     devices = [
@@ -815,7 +632,6 @@ def main():
             print(f"\n{Colors.CYAN}Preparing next device simulation...{Colors.RESET}\n")
             time.sleep(2)
     
-    # TÜM VERİLER İÇİN GENEL ÖZET
     clear_screen()
     print(f"{Colors.BOLD}{Colors.CYAN}{'='*80}")
     print("SIMULATION COMPLETE - FINAL SUMMARY")
@@ -827,7 +643,6 @@ def main():
     print(f"  Simüle Edilen Cihaz Sayısı: {Colors.GREEN}{len(all_processors)}{Colors.RESET}")
     print(f"  Toplam İşlenen Mesaj: {Colors.BLUE}{total_messages:,}{Colors.RESET}")
     
-    # Her cihaz için detaylı özet
     print(f"\n{Colors.BOLD}Cihaz Bazında Detaylar:{Colors.RESET}")
     for i, processor in enumerate(all_processors):
         device = devices[i]
@@ -850,13 +665,9 @@ def main():
     print("  - vacuum_254.csv: TAMAMEN İŞLENDİ")
     print("="*80 + Colors.RESET + "\n")
     
-    # MQTT bağlantısını kapat
     if mqtt_client:
         mqtt_client.disconnect()
 
-# ============================================================================
-# ENTRY POINT
-# ============================================================================
 if __name__ == "__main__":
     try:
         main()
