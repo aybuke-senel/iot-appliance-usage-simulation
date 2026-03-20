@@ -1,160 +1,142 @@
-# IoT-Based Appliance Usage Tracker - Simulation Documentation
+# IoT-Based Appliance Usage Tracker - Simulation
 
-## Genel Bakış
+## Overview
 
-Bu simülasyon, **IoT-Based Appliance Usage Tracker** sisteminin tam bir simülasyonunu gerçekleştirir. Sistem üç katmanlı bir mimariyi taklit eder:
+This simulation models the end-to-end data flow of an IoT-based appliance usage tracking system.
 
-1. **Cihaz Katmanı (Device Layer)**: CSV dosyalarından veri okuma (akıllı prizlerin sensör verilerini simüle eder)
-2. **İletişim Katmanı (Communication Layer)**: MQTT mesaj yayınlama simülasyonu
-3. **Uygulama Katmanı (Application Layer)**: Bulut tabanlı mesaj işleme ve canlı dashboard gösterimi
+The system follows a three-layer architecture:
 
-## Simülasyon Dosyası
+1. **Device Layer**: Reads data from CSV files (simulating smart plug sensor data)
+2. **Communication Layer**: Simulates MQTT message publishing
+3. **Application Layer**: Processes incoming data and displays a live dashboard
+
+---
+
+## Main File
 
 - [**`simulation_main.py`**](./simulation_main.py)
 
-## Kullanım
+##  Usage
 
-### Gereksinimler
+### Requirements
 ```bash
 pip install pandas numpy
 ```
 
-### Simülasyonu Çalıştırma
+### Run the Simulation
 ```bash
 python3 simulation_main.py
 ```
 
-## Simülasyon Parametreleri
+## Configuration
 
-[`simulation_main.py`](./simulation_main.py) dosyasında aşağıdaki parametreleri ayarlanmalıdır:
+You can adjust the following parameters in [`simulation_main.py`](./simulation_main.py):
 
 ```python
-SAMPLE_SIZE = None      # None = Tüm kayıtlar, veya sayı belirtin (örn: 1000)
-PUBLISH_RATE = 10000.0  # Saniyede mesaj sayısı (10000 = hızlı simülasyon)
+SAMPLE_SIZE = None      # Limits the number of records (None = full dataset)
+PUBLISH_RATE = 10000.0  # Controls how fast messages are sent
 ```
 
-## Simülasyon Bileşenleri
+## Components
 
-### 1. MQTT Publish Simülasyonu
+### 1. MQTT Publish Simulation
 ```python
 def fake_mqtt_publish(topic, payload, stats, verbose=True):
-    """
-    Gerçek bir MQTT broker'a mesaj gönderme işlemini simüle eder.
-    Gerçek sistemde bu, MQTT broker'a bağlanıp mesaj yayınlar.
-    """
 ```
 
-**Simüle Edilen Davranış:**
-- MQTT topic formatı: `home/appliance/{device_id}/power`
-- JSON payload formatı: `{"device_id": "...", "timestamp": "...", "power": ...}`
-- Mesaj yayınlama hızı: `PUBLISH_RATE` parametresi ile kontrol edilir
+**Behavior:**
+- Topic format: `home/appliance/{device_id}/power`
+- JSON payload structure: `{"device_id": "...", "timestamp": "...", "power": ...}`
+- Message rate controlled via PUBLISH_RATE
 
-### 2. Bulut İşlemci Simülasyonu
+### 2. Cloud Processing
 ```python
 class CloudProcessor:
-    """
-    Bulut tabanlı mesaj işlemciyi simüle eder.
-    Gerçek sistemde bu, MQTT broker'dan mesajları subscribe eder ve işler.
-    """
 ```
 
-**Simüle Edilen Davranış:**
-- MQTT mesajlarını alma (subscribe)
-- Mesajları parse etme ve doğrulama
-- İstatistik hesaplama
-- Veri depolama hazırlığı
+**Behavior:**
+- Receives messages
+- Parses JSON payload
+- Updates statistics
+- Prepares data for further processing
 
-### 3. Canlı Dashboard Simülasyonu
+### 3. Live Dashboard
 ```python
 def print_dashboard(stats, processor):
-    """
-    Canlı dashboard gösterimi.
-    Gerçek sistemde bu, web tabanlı bir dashboard olur.
-    """
 ```
 
-**Gösterilen Bilgiler:**
-- Cihaz bilgileri (ID, isim)
-- Gerçek zamanlı güç tüketimi
-- İstatistikler (ortalama, maksimum, minimum güç)
-- İşlenen mesaj sayısı
-- Güç görselleştirme çubuğu
+**Displays:**
+- Device information
+- Real-time power consumption
+- Average / max / min values
+- Processed message count
+- Power visualization
 
-### 4. İstatistik Takibi
+### 4. Statistics Tracking
 ```python
 class LiveStats:
-    """
-    Simülasyon sırasında canlı istatistikleri takip eder.
-    """
 ```
 
-**Takip Edilen Metrikler:**
-- Toplam mesaj sayısı
-- Toplam güç tüketimi
-- Maksimum/minimum güç
-- Anlık güç değeri
-- Son güç değerleri (son 20 kayıt)
+**Tracks:**
+- Total messages
+- Power statistics
+- Min / max values
+- Recent measurements
 
-## Simülasyon Akışı
+## Simulation Flow
 
 ```
-1. CSV Dosyası Okuma
+1. Read data from CSV
    ↓
-2. Her Satır için Döngü:
-   ├─ MQTT Payload Oluşturma
-   ├─ MQTT Publish Simülasyonu
-   ├─ Bulut İşlemci Simülasyonu
-   ├─ İstatistik Güncelleme
-   └─ Dashboard Güncelleme (periyodik)
+2. For each record:
+   ├─ Create MQTT payload
+   ├─ Simulate publish
+   ├─ Cloud processing simulation
+   ├─ Update statistics
+   └─ Update dashboard periodically
    ↓
-3. Final Dashboard Gösterimi
+3. Display final dashboard
    ↓
-4. Özet Rapor
+4. Display final summary
 ```
 
-## Projemizdeki Kullanımı
+## Project Usage
 
-### Paper'da Bahsettiğimiz Kodlar
+### Paper
 
-1. **Ana Simülasyon Dosyası**: `simulation_main.py`
-   - Tüm simülasyon mantığını içerir
-   - İyi dokümante edilmiş
-   - Proje için uygun format
+1. [**`Main Simulation File`**](./simulation_main.py)
+   - Contains the entire simulation logic
+   - Well-documented
+   - Suitable format for the project
 
-2. **Simülasyon Bileşenleri**:
-   - `fake_mqtt_publish()`: MQTT yayınlama simülasyonu
-   - `CloudProcessor`: Bulut işlemci simülasyonu
-   - `LiveStats`: İstatistik takibi
-   - `print_dashboard()`: Dashboard gösterimi
+2. **Simulation Components**:
+   - `fake_mqtt_publish()`: MQTT publishing simulation
+   - `CloudProcessor`: Cloud processing simulation
+   - `LiveStats`: Statistics tracking
+   - `print_dashboard()`: Dashboard display
 
-### Sunumumuz İçin Kullanım
+### Usage in Our Presentation
 
-Simülasyonu kaydetmek için terminal ekranımı kaydettim:
+To record the simulation, I captured the terminal output:
 ```bash
-# macOS kullandığım için
 script -a simulation_output.txt python3 simulation_main.py
 
 ```
 
-## Simülasyon Çıktıları
+## Terminal Outputs
+- Live dashboard updates
+- Progress tracking
+- Real-time statistics
+- MQTT message logs (optional)
 
-### Terminal Çıktısı
-- Canlı dashboard güncellemeleri
-- İlerleme çubuğu
-- Gerçek zamanlı istatistikler
-- MQTT mesaj logları (isteğe bağlı)
+## Technical Details
 
-### Log Dosyası 
-- `iot_simulation.log`: Detaylı simülasyon logları
-
-## Teknik Detaylar
-
-### Veri Formatı
-- **Giriş**: CSV dosyaları (`fridge_207.csv`, `vacuum_254.csv`)
-- **Format**: `timestamp`, `power` kolonları
+### Data Format
+- **Input**: CSV files (`fridge_207.csv`, `vacuum_254.csv`)
+- **Format**: `timestamp`, `power` columns
 - **Timestamp**: ISO format datetime
 
-### MQTT Mesaj Formatı
+### MQTT Message Format
 ```json
 {
   "device_id": "fridge_207",
@@ -163,32 +145,34 @@ script -a simulation_output.txt python3 simulation_main.py
 }
 ```
 
-### Performans Optimizasyonları
-- Büyük veri setleri için dashboard güncellemeleri periyodik yapılır
-- Mesaj logları her mesaj için değil, örnekleme ile gösterilir
-- İlerleme çubuğu her 100 kayıtta bir güncellenir
+### Performance Optimizations
+- Dashboard updates are performed periodically for large datasets
+- Message logs are shown by sampling, not for every message
+- Progress bar is updated every 100 records
 
-## Referanslar
+## References
 
-Bu simülasyon aşağıdaki gerçek sistem bileşenlerini taklit eder:
+This simulation represents the following real system components:
 
-1. **ESP32 Akıllı Prizler**: CSV dosyalarından okunan veriler
-2. **MQTT Broker**: `fake_mqtt_publish()` fonksiyonu
-3. **Bulut Sunucu**: `CloudProcessor` sınıfı
-4. **Web Dashboard**: `print_dashboard()` fonksiyonu
+1. **ESP32 Smart Plugs**: Data read from CSV files
+2. **MQTT Broker**: fake_mqtt_publish() function
+3. **Cloud Server**: CloudProcessor class
+4. **Web Dashboard**: print_dashboard() function
 
-## Notlar
+## Notes
 
-- Bu simülasyon gerçek bir MQTT broker kullanmaz
-- Tüm iletişim Python içinde simüle edilir
-- Simülasyon amacıyla tasarlanmıştır, gerçek IoT sistemine dönüştürülebilir
-- Büyük veri setleri için simülasyon süresi uzun olabilir (2.5M kayıt için ~4-5 dakika)
+- This is a simulation (no real MQTT broker required)
+- All communication is handled within Python
+- The structure is designed to resemble a real IoT system
+- Can be extended to a real-world implementation
 
-## Akademik Kullanım
+## Academic Context
 
-Bu simülasyon kodu, projemizin **"Proposed Methodology"** bölümünde şu şekilde açıklanmaktadır:
+This simulation code is described in the "**Proposed Methodology**" section of the project as follows:
 
-> "Simülasyonumuz üç katmanlı mimariyi taklit eder: (1) Cihaz katmanında CSV dosyalarından sensör verileri okunur, (2) İletişim katmanında MQTT protokolü ile mesaj yayınlama simüle edilir, (3) Uygulama katmanında bulut tabanlı mesaj işleme ve canlı dashboard gösterimi gerçekleştirilir."
+> "The simulation represents a three-layer architecture: 
+(1) the device layer reads sensor data from CSV files, (2) the communication layer simulates message publishing using the MQTT protocol, and (3) the application layer performs cloud-based message processing and live dashboard visualization."
+> 
+The simulation code is available in [`simulation_main.py`](./simulation_main.py) and can be used to demonstrate the technical implementation of the system.
 
-Simülasyon kodları [`simulation_main.py`](./simulation_main.py) dosyasında bulunmaktadır ve projenin teknik detaylarını kanıtlamak için kullanılabilir.
 
