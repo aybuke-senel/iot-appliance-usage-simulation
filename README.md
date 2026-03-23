@@ -4,6 +4,8 @@ A Python-based IoT simulation that processes large-scale appliance power consump
 
 This project demonstrates how smart home devices can stream energy usage data to the cloud for monitoring, aggregation, and analytics.
 
+This project is supported by a [research paper](./iot_simulation_paper.pdf) that explains the system design, simulation methodology, and analysis in detail.
+
 -----
 
 ## Developers
@@ -64,6 +66,21 @@ Device Layer → MQTT Broker → Cloud Processor → Analytics Dashboard
 
 -----
 
+##  Research Paper
+
+This project is backed by a comprehensive [technical paper](./iot_simulation_paper.pdf) that presents the full design and evaluation of the system.
+
+The paper covers:
+
+- Problem definition: lack of appliance-level energy visibility  
+- IoT system architecture (Device → MQTT → Cloud)  
+- Simulation of ESP32-based smart devices  
+- Real-world dataset validation (ECOCO2)  
+- Appliance behavior analysis (cyclic vs burst consumption patterns)  
+- System performance and scalability
+
+-----
+
 ## Dataset
 
 This project uses the public dataset:
@@ -86,7 +103,8 @@ Install required libraries:
 pip install pandas paho-mqtt
 ```
 
-Run the simulation:
+Run the simulation using the [main script](./simulation_main.py) or via terminal:
+
 ```bash
 python simulation_main.py
 ```
